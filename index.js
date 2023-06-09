@@ -62,6 +62,7 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const usersCollection = client.db("sportsAcademic").collection("users");
+    const classesCollection = client.db("sportsAcademic").collection("classes");
 
     app.post("/jwt", (req, res) => {
         const user = req.body;
@@ -116,7 +117,7 @@ async function run() {
         const query = { email: email };
         const user = await usersCollection.findOne(query);
         const result = { admin: user?.role === "admin" };
-        console.log(result);
+        // console.log(result);
         res.send(result);
       });
 
@@ -131,7 +132,7 @@ async function run() {
         const user = await usersCollection.findOne(query);
        
         const result = { instructor: user?.role === "instructor" };
-       console.log(result);
+      //  console.log(result);
         res.send(result);
       });
   
@@ -147,7 +148,7 @@ async function run() {
         const user = await usersCollection.findOne(query);
        
         const result = { student: user?.role === "student" };
-       console.log(result);
+      //  console.log(result);
         res.send(result);
       });
   
@@ -155,7 +156,7 @@ async function run() {
   
       app.patch("/users/admin/:id", async (req, res) => {
         const id = req.params.id;
-        console.log(id);
+        // console.log(id);
         const filter = { _id: new ObjectId(id) };
         const updateDoc = {
           $set: {
@@ -176,6 +177,26 @@ async function run() {
           },
         };
         const result = await usersCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      });
+
+
+
+      //class post and get
+
+      app.get("/class/:email", async (req, res) => {
+        const email = req.params.email;
+        console.log(email)
+        const query = { instructorEmail: email };
+        console.log(query)
+        const result = await classesCollection.find(query).toArray();
+        res.send(result);
+      });
+  
+      app.post("/class", async (req, res) => {
+        const newItem = req.body;
+        console.log(newItem);
+        const result = await classesCollection.insertOne(newItem);
         res.send(result);
       });
 
