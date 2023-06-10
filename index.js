@@ -167,6 +167,16 @@ async function run() {
       res.send(result);
     });
 
+
+
+    app.get("/instructor", async (req, res) => {
+       
+      const query = { role: 'instructor' };
+      console.log(query);
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+
     //class post and get
 
     app.get("/class", async (req, res) => {
