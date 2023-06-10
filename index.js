@@ -156,7 +156,7 @@ async function run() {
 
     app.patch("/users/instructor/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
@@ -176,8 +176,17 @@ async function run() {
 
     app.get("/class/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { instructorEmail: email };
+      // console.log(query);
+      const result = await classesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+
+    app.get("/approve", async (req, res) => {
+       
+      const query = { status: 'approve' };
       console.log(query);
       const result = await classesCollection.find(query).toArray();
       res.send(result);
