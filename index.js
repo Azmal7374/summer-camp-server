@@ -57,6 +57,9 @@ async function run() {
 
     const usersCollection = client.db("sportsAcademic").collection("users");
     const classesCollection = client.db("sportsAcademic").collection("classes");
+    const savedCollection = client
+      .db("sportsAcademic")
+      .collection("savedClasses");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -167,12 +170,9 @@ async function run() {
       res.send(result);
     });
 
-
-
     app.get("/instructor", async (req, res) => {
-       
-      const query = { role: 'instructor' };
-      console.log(query);
+      const query = { role: "instructor" };
+      // console.log(query);
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
@@ -193,34 +193,47 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/approve", async (req, res) => {
-       
-      const query = { status: 'approve' };
-      console.log(query);
+      const query = { status: "approve" };
+      // console.log(query);
       const result = await classesCollection.find(query).toArray();
       res.send(result);
     });
 
     app.post("/class", async (req, res) => {
       const newItem = req.body;
-      console.log(newItem);
+      // console.log(newItem);
       const result = await classesCollection.insertOne(newItem);
+      res.send(result);
+    });
+
+    app.patch("/class/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      // const options = {upsert: true};
+      const updateDoc = {
+        //  seats: { $lt: 0 } ,
+        $inc: {
+          seats: -1,
+        },
+      };
+      const result = await classesCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
     app.patch("/class/approve/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
-      const filter ={ _id: new ObjectId(id) };
+      // console.log(id);
+      const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
           status: "approve",
         },
       };
-      console.log(updateDoc);
+      // console.log(updateDoc);
       const result = await classesCollection.updateOne(filter, updateDoc);
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
@@ -234,6 +247,29 @@ async function run() {
         },
       };
       const result = await classesCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    //saved calls post
+
+    app.get("/savedClass", async (req, res) => {
+      const result = await savedCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/savedClass", async (req, res) => {
+      const saved = req.body;
+      console.log(saved);
+      const query = { name : saved.name };
+      console.log(query);
+      const existingClass = await savedCollection.findOne(query);
+      console.log("Existing Class", existingClass);
+
+      if (existingClass) {
+          return res.send({ message: "Class  already exists" });
+        }
+      const result = await savedCollection.insertOne(saved);
+      console.log(result);
       res.send(result);
     });
 
