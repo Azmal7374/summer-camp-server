@@ -312,6 +312,7 @@ async function run() {
      app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
+      console.log(amount)
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
@@ -325,17 +326,50 @@ async function run() {
 
      //payment related API
 
-     app.post("/payments", verifyJWT, async (req, res) => {
+     app.post("/payments/:id", verifyJWT, async (req, res) => {
       const payment = req.body;
+      payment.createAt = new Date();
+      console.log(payment)
       const insertResult = await paymentCollection.insertOne(payment);
-
+        const id =req.params.id
       const query = {
-        _id: { $in: payment.cartItems.map((id) => new ObjectId(id)) },
+        _id:new ObjectId(id),
       };
-      const deleteResult = await cartCollection.deleteMany(query);
+      const deleteResult = await savedCollection.deleteMany(query);
 
       res.send({ insertResult, deleteResult });
     });
+
+
+    app.get("/payment/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      const query = { studentEmail: email };
+      // console.log(query);
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
+//sort with descending
+    app.get("/history/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      // const createAt = new Date()
+      const query = { studentEmail: email };
+      // console.log(query);
+      const result = await paymentCollection.find(query).sort({createdAt: -1}).toArray();
+      res.send(result);
+    });
+
+
+
+    app.get('/payment', async (req, res)=>{
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
+    })
+
+
+    
 
     // app.get("/admin-stats", verifyJWT, verifyAdmin, async (req, res) => {
     //   const users = await usersCollection.estimatedDocumentCount();
@@ -352,39 +386,39 @@ async function run() {
     //   });
     // });
 
-    app.get("/order-stats", verifyJWT,verifyAdmin, async (req, res) => {
-      const pipeline = [
-        {
-          $lookup: {
-            from: 'menu',
-            localField: 'menuItems',
-            foreignField: '_id',
-            as: 'menuItemsData'
-          }
-        },
-        {
-          $unwind: '$menuItemsData'
-        },
-        {
-          $group: {
-            _id: '$menuItemsData.category',
-            count: { $sum: 1 },
-            total: { $sum: '$menuItemsData.price' }
-          }
-        },
-        {
-          $project: {
-            category: '$_id',
-            count: 1,
-            total: { $round: ['$total', 2] },
-            _id: 0
-          }
-        }
-      ];
+    // app.get("/order-stats", verifyJWT,verifyAdmin, async (req, res) => {
+    //   const pipeline = [
+    //     {
+    //       $lookup: {
+    //         from: 'menu',
+    //         localField: 'menuItems',
+    //         foreignField: '_id',
+    //         as: 'menuItemsData'
+    //       }
+    //     },
+    //     {
+    //       $unwind: '$menuItemsData'
+    //     },
+    //     {
+    //       $group: {
+    //         _id: '$menuItemsData.category',
+    //         count: { $sum: 1 },
+    //         total: { $sum: '$menuItemsData.price' }
+    //       }
+    //     },
+    //     {
+    //       $project: {
+    //         category: '$_id',
+    //         count: 1,
+    //         total: { $round: ['$total', 2] },
+    //         _id: 0
+    //       }
+    //     }
+    //   ];
 
-      const result = await paymentCollection.aggregate(pipeline).toArray()
-      res.send(result)
-    });
+    //   const result = await paymentCollection.aggregate(pipeline).toArray()
+    //   res.send(result)
+    // });
 
 
 
