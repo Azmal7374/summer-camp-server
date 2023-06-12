@@ -261,7 +261,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/savedClass", async (req, res) => {
+    app.get("/selectedClass", async (req, res) => {
       const result = await savedCollection.find().toArray();
       res.send(result);
     });
@@ -329,7 +329,8 @@ async function run() {
      app.post("/payments/:id", verifyJWT, async (req, res) => {
       const payment = req.body;
       payment.createAt = new Date();
-      console.log(payment)
+      // console.log(payment)
+     
       const insertResult = await paymentCollection.insertOne(payment);
         const id =req.params.id
       const query = {
@@ -337,7 +338,33 @@ async function run() {
       };
       const deleteResult = await savedCollection.deleteMany(query);
 
+      // const filter={name:payment.name}
+      // const findResult =await classesCollection.findOne(filter)
+      // console.log(findResult)
+      // const updateDoc ={
+      //   $inc: {booking : 1}
+      // }
+      // const updateResult = await classesCollection.updateOne(findResult, updateDoc)
+      //    console.log(updateResult)
       res.send({ insertResult, deleteResult });
+    });
+
+
+    app.put("/payment/:name", async (req, res) => {
+      const name = req.params.name;
+      console.log(name);
+      const filter = { name:name };
+      // const options = {upsert: true};
+      const options ={upsert: true}
+      const updateDoc = {
+        //  seats: { $lt: 0 } ,
+        $inc: {
+          booking: 1,
+        },
+      };
+      const result = await classesCollection.updateOne(filter, updateDoc, options);
+      console.log(result)
+      res.send(result);
     });
 
 
