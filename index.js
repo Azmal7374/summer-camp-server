@@ -184,6 +184,14 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get("/topClass", async (req, res) => {
+      const result = await classesCollection.find().sort({'booking': -1}).toArray();
+      res.send(result);
+    });
+
+    
+
     app.get("/class/:email", async (req, res) => {
       const email = req.params.email;
       // console.log(email);
