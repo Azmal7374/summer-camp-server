@@ -60,6 +60,7 @@ async function run() {
     const classesCollection = client.db("sportsAcademic").collection("classes");
     const savedCollection = client.db("sportsAcademic").collection("savedClasses");
     const paymentCollection = client.db("sportsAcademic").collection("payments");
+    const feedbackCollection = client.db("sportsAcademic").collection("feedback");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -215,9 +216,15 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/feedback", async (req, res) => {
+      const newItem = req.body;
+      const result = await feedbackCollection.insertOne(newItem);
+      console.log(result);
+      res.send(result);
+    });
+
     app.patch("/class/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const filter = { _id: new ObjectId(id) };
       // const options = {upsert: true};
       const updateDoc = {
@@ -232,7 +239,6 @@ async function run() {
 
     app.patch("/class/approve/:id", async (req, res) => {
       const id = req.params.id;
-      // console.log(id);
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
@@ -263,7 +269,7 @@ async function run() {
 
     app.get("/savedClass", async (req, res) => {
       const {id} = req.query
-      console.log(id)
+      // console.log(id)
       const query = {_id: new ObjectId(id)}
       const result = await savedCollection.findOne(query)
       res.send(result);
@@ -291,7 +297,7 @@ async function run() {
     app.post("/savedClass", async (req, res) => {
     
       const saved = req.body;      
-      console.log(saved);
+      // console.log(saved);
       
       const email =saved.studentEmail
         const name =  saved.name;
@@ -302,15 +308,15 @@ async function run() {
         ]
       };
       
-      console.log(query);
+      // console.log(query);
       const existingClass = await savedCollection.findOne(query);
-      console.log("Existing Class", existingClass);
+      // console.log("Existing Class", existingClass);
 
       if (existingClass) {
           return res.send({ message: "Class  already exists" });
         }
       const result = await savedCollection.insertOne(saved);
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
@@ -320,7 +326,7 @@ async function run() {
      app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
-      console.log(amount)
+      // console.log(amount)
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
@@ -360,7 +366,7 @@ async function run() {
 
     app.put("/payment/:name", async (req, res) => {
       const name = req.params.name;
-      console.log(name);
+      // console.log(name);
       const filter = { name:name };
       // const options = {upsert: true};
       const options ={upsert: true}
